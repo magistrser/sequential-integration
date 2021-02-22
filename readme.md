@@ -37,8 +37,11 @@ sequential_integration::calculate_triple_integral_simpson(
 ```
 
 **equation** - _f(x,y)_ for double integral and _f(x,y,z)_ for triple integral
+
 **first_integral_[begin/end]** - _constant_
+
 **second_integral_[begin/end]** - _f(x)_
+
 **third_integral_[begin/end]** - _f(x,y)_
 
 Rules for writing equations: [mexprp](https://docs.rs/mexprp/0.3.0/mexprp/)
