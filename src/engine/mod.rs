@@ -1,6 +1,7 @@
 mod helper_equation_traits;
 mod integrators;
 pub mod quadrature;
+pub mod range_generator;
 mod utils;
 
 use fehler::throws;

@@ -1,13 +1,13 @@
-mod simpson_quadrature_double_integral;
-pub use simpson_quadrature_double_integral::SimpsonQuadratureDoubleIntegral;
-mod simpson_quadrature_triple_integral;
-pub use simpson_quadrature_triple_integral::SimpsonQuadratureTripleIntegral;
+pub mod simpson;
 
-use super::helper_equation_traits::{EquationOfThreeVariable, EquationOfTwoVariable};
+use super::{
+    helper_equation_traits::{EquationOfThreeVariable, EquationOfTwoVariable},
+    range_generator::RangeGenerator,
+};
 use crate::errors::Result;
 
 pub trait GetQuadratureRange {
-    fn get_range(a: f64, b: f64, h: f64) -> Result<Vec<f64>>;
+    fn get_range_generator(a: f64, b: f64, h: f64) -> Result<Box<dyn RangeGenerator>>;
 }
 
 pub trait FinalizeCalculation {

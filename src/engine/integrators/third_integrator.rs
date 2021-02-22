@@ -6,6 +6,7 @@ use crate::{
     engine::{
         helper_equation_traits::{Bounds, EquationOfThreeVariable, EquationOfTwoVariable},
         quadrature::GetQuadratureRange,
+        range_generator::StepType,
         utils,
     },
     errors::Error,
@@ -48,17 +49,22 @@ impl<G: GetQuadratureRange, E: EquationOfThreeVariable> EquationOfTwoVariable
         let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
 
         let mut result = 0.;
-        let range = G::get_range(a, b, self.h)?;
-        for z in range.iter().take(range.len() - 1) {
-            result += self
-                .equation
-                .calculate(x, bounds_x, y, bounds_y, *z, (a, b))?;
-        }
-
-        if let Some(last) = range.last() {
-            result += self
-                .equation
-                .calculate(x, bounds_x, y, bounds_y, *last, (a, b))?;
+        let mut range = G::get_range_generator(a, b, self.h)?;
+        loop {
+            match range.next()? {
+                StepType::Common(z) => {
+                    result += self
+                        .equation
+                        .calculate(x, bounds_x, y, bounds_y, z, (a, b))?
+                }
+                StepType::Last(z) => {
+                    result += self
+                        .equation
+                        .calculate_last(x, bounds_x, y, bounds_y, z, (a, b))?;
+                    break;
+                }
+                StepType::NoStep => break,
+            }
         }
 
         result

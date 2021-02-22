@@ -17,6 +17,13 @@ pub enum Error {
         equation: String,
         backtrace: Backtrace,
     },
+
+    #[snafu(display("RangeGenerator step{} out of b bound{}", step, b))]
+    RangeGeneratorOutOfBounds {
+        step: f64,
+        b: f64,
+        backtrace: Backtrace,
+    },
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

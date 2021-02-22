@@ -1,7 +1,10 @@
 use fehler::throws;
 
 use crate::{
-    engine::{helper_equation_traits::EquationOfOneVariable, quadrature::GetQuadratureRange},
+    engine::{
+        helper_equation_traits::EquationOfOneVariable, quadrature::GetQuadratureRange,
+        range_generator::StepType,
+    },
     errors::Error,
 };
 
@@ -16,14 +19,16 @@ impl FirstIntegrator {
         equation: E,
     ) -> f64 {
         let mut result = 0.;
-
-        let range = G::get_range(a, b, h)?;
-        for x in range.iter().take(range.len() - 1) {
-            result += equation.calculate(*x, (a, b))?;
-        }
-
-        if let Some(last) = range.last() {
-            result += equation.calculate_last(*last, (a, b))?;
+        let mut range = G::get_range_generator(a, b, h)?;
+        loop {
+            match range.next()? {
+                StepType::Common(x) => result += equation.calculate(x, (a, b))?,
+                StepType::Last(x) => {
+                    result += equation.calculate_last(x, (a, b))?;
+                    break;
+                }
+                StepType::NoStep => break,
+            }
         }
 
         result

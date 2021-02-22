@@ -1,12 +1,15 @@
 use fehler::throws;
 use mexprp::{Context, Expression};
 
-use super::{
-    FinalizeCalculation, GetQuadratureRange, GetStepSizeDoubleIntegral, QuadratureDoubleIntegral,
-};
+use super::simpson_range::SimpsonRangeGenerator;
 use crate::{
     engine::{
         helper_equation_traits::{Bounds, EquationOfTwoVariable},
+        quadrature::{
+            FinalizeCalculation, GetQuadratureRange, GetStepSizeDoubleIntegral,
+            QuadratureDoubleIntegral,
+        },
+        range_generator::RangeGenerator,
         utils,
     },
     errors::Error,
@@ -63,13 +66,13 @@ impl SimpsonQuadratureDoubleIntegral {
 impl EquationOfTwoVariable for SimpsonQuadratureDoubleIntegral {
     #[throws]
     fn calculate(&self, x: f64, _: Bounds, y: f64, _: Bounds) -> f64 {
-        let x0 = x - self.h;
-        let x1 = x;
-        let x2 = x + self.h;
+        let x0 = x;
+        let x1 = x0 + self.h;
+        let x2 = x1 + self.h;
 
-        let y0 = y - self.k;
-        let y1 = y;
-        let y2 = y + self.k;
+        let y0 = y;
+        let y1 = y0 + self.k;
+        let y2 = y1 + self.k;
 
         let x_values = [x0, x1, x2];
         let y_values = [y0, y1, y2];
@@ -79,11 +82,11 @@ impl EquationOfTwoVariable for SimpsonQuadratureDoubleIntegral {
 
     #[throws]
     fn calculate_last(&self, x: f64, bounds_x: Bounds, y: f64, bounds_y: Bounds) -> f64 {
-        let x0 = x - self.h;
+        let x0 = x;
         let x2 = bounds_x.1;
         let x1 = (x2 - x0) / 2.;
 
-        let y0 = y - self.k;
+        let y0 = y;
         let y2 = bounds_y.1;
         let y1 = (y2 - y0) / 2.;
 
@@ -109,17 +112,8 @@ impl GetStepSizeDoubleIntegral for SimpsonQuadratureDoubleIntegral {
 
 impl GetQuadratureRange for SimpsonQuadratureDoubleIntegral {
     #[throws]
-    fn get_range(a: f64, b: f64, h: f64) -> Vec<f64> {
-        let mut range = vec![];
-        range.reserve(((b - a) / h) as usize + 1);
-
-        let mut x = a + h;
-        while x < b {
-            range.push(x);
-            x += 2. * h;
-        }
-
-        range
+    fn get_range_generator(a: f64, b: f64, h: f64) -> Box<dyn RangeGenerator> {
+        Box::new(SimpsonRangeGenerator::new(a, b, h)?) as Box<dyn RangeGenerator>
     }
 }
 

@@ -12,7 +12,7 @@ pub fn calculate_double_integral_simpson(
     second_integral_end: &str,
     second_integral_step: f64,
 ) -> f64 {
-    let simpson_quadrature = engine::quadrature::SimpsonQuadratureDoubleIntegral::new(
+    let simpson_quadrature = engine::quadrature::simpson::SimpsonQuadratureDoubleIntegral::new(
         equation,
         first_integral_step,
         second_integral_step,
@@ -40,7 +40,7 @@ pub fn calculate_triple_integral_simpson(
     third_integral_end: &str,
     third_integral_step: f64,
 ) -> f64 {
-    let simpson_quadrature = engine::quadrature::SimpsonQuadratureTripleIntegral::new(
+    let simpson_quadrature = engine::quadrature::simpson::SimpsonQuadratureTripleIntegral::new(
         equation,
         first_integral_step,
         second_integral_step,
