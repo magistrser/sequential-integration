@@ -23,5 +23,12 @@ fn calculate_double_integral_simpson_test() {
     )
     .unwrap();
 
+    println!(
+        "result: {}, expected: {}, diff: {}",
+        result,
+        std::f64::consts::FRAC_PI_2,
+        result - std::f64::consts::FRAC_PI_2
+    );
+
     assert_approx_eq!(result, std::f64::consts::FRAC_PI_2, 1e-2);
 }

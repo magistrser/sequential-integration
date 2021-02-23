@@ -3,15 +3,16 @@ pub mod simpson;
 use super::{
     helper_equation_traits::{EquationOfThreeVariable, EquationOfTwoVariable},
     range_generator::RangeGenerator,
+    CalculationResult,
 };
 use crate::errors::Result;
 
 pub trait GetQuadratureRange {
-    fn get_range_generator(a: f64, b: f64, h: f64) -> Result<Box<dyn RangeGenerator>>;
+    fn get_range_generator(a: f64, b: f64, h: f64) -> Result<Option<Box<dyn RangeGenerator>>>;
 }
 
 pub trait FinalizeCalculation {
-    fn finalize(&self, result: f64) -> Result<f64>;
+    fn finalize(&self, result: CalculationResult) -> Result<f64>;
 }
 
 pub trait GetStepSizeDoubleIntegral {

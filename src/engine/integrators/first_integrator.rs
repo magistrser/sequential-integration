@@ -2,8 +2,9 @@ use fehler::throws;
 
 use crate::{
     engine::{
-        helper_equation_traits::EquationOfOneVariable, quadrature::GetQuadratureRange,
-        range_generator::StepType,
+        helper_equation_traits::EquationOfOneVariable,
+        quadrature::{FinalizeCalculation, GetQuadratureRange},
+        CalculationResult,
     },
     errors::Error,
 };
@@ -12,25 +13,29 @@ pub struct FirstIntegrator;
 
 impl FirstIntegrator {
     #[throws]
-    pub fn integrate<E: EquationOfOneVariable, G: GetQuadratureRange>(
+    pub fn integrate<E: EquationOfOneVariable, G: GetQuadratureRange + FinalizeCalculation>(
         a: f64,
         b: f64,
         h: f64,
         equation: E,
+        quadrature: G,
     ) -> f64 {
-        let mut result = 0.;
-        let mut range = G::get_range_generator(a, b, h)?;
+        let mut result = CalculationResult::new();
+        let mut range = if let Some(range) = G::get_range_generator(a, b, h)? {
+            range
+        } else {
+            return result.common;
+        };
+
         loop {
-            match range.next()? {
-                StepType::Common(x) => result += equation.calculate(x, (a, b))?,
-                StepType::Last(x) => {
-                    result += equation.calculate_last(x, (a, b))?;
-                    break;
-                }
-                StepType::NoStep => break,
+            let step = range.next()?;
+            result += equation.calculate(step, (a, b))?;
+
+            if step.is_last() {
+                break;
             }
         }
 
-        result
+        quadrature.finalize(result)?
     }
 }

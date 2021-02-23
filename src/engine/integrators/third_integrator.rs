@@ -6,8 +6,7 @@ use crate::{
     engine::{
         helper_equation_traits::{Bounds, EquationOfThreeVariable, EquationOfTwoVariable},
         quadrature::GetQuadratureRange,
-        range_generator::StepType,
-        utils,
+        utils, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
@@ -40,38 +39,38 @@ impl<G: GetQuadratureRange, E: EquationOfThreeVariable> EquationOfTwoVariable
     for ThirdIntegrator<G, E>
 {
     #[throws]
-    fn calculate(&self, x: f64, bounds_x: Bounds, y: f64, bounds_y: Bounds) -> f64 {
+    fn calculate(
+        &self,
+        x: CalculationStep,
+        bounds_x: Bounds,
+        y: CalculationStep,
+        bounds_y: Bounds,
+    ) -> CalculationResult {
         let mut context = Context::new();
-        context.set_var("x", x);
-        context.set_var("y", y);
+        context.set_var("x", *x);
+        context.set_var("y", *y);
 
         let a = utils::calculate_expression_one_value_result(&context, &self.a_equation)?;
         let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
 
-        let mut result = 0.;
-        let mut range = G::get_range_generator(a, b, self.h)?;
+        let mut result = CalculationResult::new();
+        let mut range = if let Some(range) = G::get_range_generator(a, b, self.h)? {
+            range
+        } else {
+            return result;
+        };
+
         loop {
-            match range.next()? {
-                StepType::Common(z) => {
-                    result += self
-                        .equation
-                        .calculate(x, bounds_x, y, bounds_y, z, (a, b))?
-                }
-                StepType::Last(z) => {
-                    result += self
-                        .equation
-                        .calculate_last(x, bounds_x, y, bounds_y, z, (a, b))?;
-                    break;
-                }
-                StepType::NoStep => break,
+            let step = range.next()?;
+            result += self
+                .equation
+                .calculate(x, bounds_x, y, bounds_y, step, (a, b))?;
+
+            if step.is_last() {
+                break;
             }
         }
 
         result
-    }
-
-    #[throws]
-    fn calculate_last(&self, x: f64, bounds_x: Bounds, y: f64, bounds_y: Bounds) -> f64 {
-        self.calculate(x, bounds_x, y, bounds_y)?
     }
 }

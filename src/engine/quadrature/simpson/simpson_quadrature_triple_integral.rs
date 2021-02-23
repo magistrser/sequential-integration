@@ -1,7 +1,7 @@
 use fehler::throws;
 use mexprp::{Context, Expression};
 
-use super::simpson_range::SimpsonRangeGenerator;
+use super::{simpson_range::SimpsonRangeGenerator, utils as simpson_utils};
 use crate::{
     engine::{
         helper_equation_traits::{Bounds, EquationOfThreeVariable},
@@ -10,7 +10,7 @@ use crate::{
             QuadratureTripleIntegral,
         },
         range_generator::RangeGenerator,
-        utils,
+        utils, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
@@ -82,64 +82,53 @@ impl SimpsonQuadratureTripleIntegral {
             + f[2][2][2];
         result
     }
+
+    fn multiple_with_simpson_constant(value: f64, h: f64, k: f64, l: f64) -> f64 {
+        h * k * l * value / 27.
+    }
 }
 
 impl EquationOfThreeVariable for SimpsonQuadratureTripleIntegral {
     #[throws]
-    fn calculate(&self, x: f64, _: Bounds, y: f64, _: Bounds, z: f64, _: Bounds) -> f64 {
-        let x0 = x;
-        let x1 = x0 + self.h;
-        let x2 = x1 + self.h;
-
-        let y0 = y;
-        let y1 = y0 + self.k;
-        let y2 = y1 + self.k;
-
-        let z0 = z;
-        let z1 = z0 + self.l;
-        let z2 = z1 + self.l;
-
-        let x_values = [x0, x1, x2];
-        let y_values = [y0, y1, y2];
-        let z_values = [z0, z1, z2];
-
-        self.calculate_simpson(x_values, y_values, z_values)?
-    }
-
-    #[throws]
-    fn calculate_last(
+    fn calculate(
         &self,
-        x: f64,
+        x: CalculationStep,
         bounds_x: Bounds,
-        y: f64,
+        y: CalculationStep,
         bounds_y: Bounds,
-        z: f64,
+        z: CalculationStep,
         bounds_z: Bounds,
-    ) -> f64 {
-        let x0 = x;
-        let x2 = bounds_x.1;
-        let x1 = (x2 - x0) / 2.;
+    ) -> CalculationResult {
+        let mut is_last_step = false;
 
-        let y0 = y;
-        let y2 = bounds_y.1;
-        let y1 = (y2 - y0) / 2.;
+        let x = simpson_utils::SimpsonPoints::generate(x, bounds_x, self.h, &mut is_last_step);
+        let y = simpson_utils::SimpsonPoints::generate(y, bounds_y, self.k, &mut is_last_step);
+        let z = simpson_utils::SimpsonPoints::generate(z, bounds_z, self.l, &mut is_last_step);
 
-        let z0 = z;
-        let z2 = bounds_z.1;
-        let z1 = (z2 - z0) / 2.;
+        let x_values = [x.v0, x.v1, x.v2];
+        let y_values = [y.v0, y.v1, y.v2];
+        let z_values = [z.v0, z.v1, z.v2];
 
-        let x_values = [x0, x1, x2];
-        let y_values = [y0, y1, y2];
-        let z_values = [z0, z1, z2];
+        let mut result = CalculationResult::new();
+        if is_last_step {
+            result.add_last(Self::multiple_with_simpson_constant(
+                self.calculate_simpson(x_values, y_values, z_values)?,
+                x.h,
+                y.h,
+                z.h,
+            ));
+        } else {
+            result.add_common(self.calculate_simpson(x_values, y_values, z_values)?);
+        }
 
-        self.calculate_simpson(x_values, y_values, z_values)?
+        result
     }
 }
 
 impl FinalizeCalculation for SimpsonQuadratureTripleIntegral {
     #[throws]
-    fn finalize(&self, result: f64) -> f64 {
-        self.h * self.k * self.l * result / 27.
+    fn finalize(&self, result: CalculationResult) -> f64 {
+        Self::multiple_with_simpson_constant(result.common, self.h, self.k, self.l) + result.last
     }
 }
 
@@ -151,8 +140,12 @@ impl GetStepSizeTripleIntegral for SimpsonQuadratureTripleIntegral {
 
 impl GetQuadratureRange for SimpsonQuadratureTripleIntegral {
     #[throws]
-    fn get_range_generator(a: f64, b: f64, h: f64) -> Box<dyn RangeGenerator> {
-        Box::new(SimpsonRangeGenerator::new(a, b, h)?) as Box<dyn RangeGenerator>
+    fn get_range_generator(a: f64, b: f64, h: f64) -> Option<Box<dyn RangeGenerator>> {
+        if let Some(range_generator) = SimpsonRangeGenerator::new(a, b, h)? {
+            Some(Box::new(range_generator) as Box<dyn RangeGenerator>)
+        } else {
+            None
+        }
     }
 }
 

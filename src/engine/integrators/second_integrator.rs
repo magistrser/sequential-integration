@@ -6,8 +6,7 @@ use crate::{
     engine::{
         helper_equation_traits::{Bounds, EquationOfOneVariable, EquationOfTwoVariable},
         quadrature::GetQuadratureRange,
-        range_generator::StepType,
-        utils,
+        utils, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
@@ -40,31 +39,29 @@ impl<G: GetQuadratureRange, E: EquationOfTwoVariable> EquationOfOneVariable
     for SecondIntegrator<G, E>
 {
     #[throws]
-    fn calculate(&self, x: f64, bounds: Bounds) -> f64 {
+    fn calculate(&self, x: CalculationStep, bounds: Bounds) -> CalculationResult {
         let mut context = Context::new();
-        context.set_var("x", x);
+        context.set_var("x", *x);
 
         let a = utils::calculate_expression_one_value_result(&context, &self.a_equation)?;
         let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
 
-        let mut result = 0.;
-        let mut range = G::get_range_generator(a, b, self.h)?;
+        let mut result = CalculationResult::new();
+        let mut range = if let Some(range) = G::get_range_generator(a, b, self.h)? {
+            range
+        } else {
+            return result;
+        };
+
         loop {
-            match range.next()? {
-                StepType::Common(y) => result += self.equation.calculate(x, bounds, y, (a, b))?,
-                StepType::Last(y) => {
-                    result += self.equation.calculate_last(x, bounds, y, (a, b))?;
-                    break;
-                }
-                StepType::NoStep => break,
+            let step = range.next()?;
+            result += self.equation.calculate(x, bounds, step, (a, b))?;
+
+            if step.is_last() {
+                break;
             }
         }
 
         result
-    }
-
-    #[throws]
-    fn calculate_last(&self, x: f64, bounds: Bounds) -> f64 {
-        self.calculate(x, bounds)?
     }
 }

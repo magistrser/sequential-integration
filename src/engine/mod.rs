@@ -1,7 +1,11 @@
-mod helper_equation_traits;
+mod calculation_step;
+pub mod helper_equation_traits;
 mod integrators;
 pub mod quadrature;
 pub mod range_generator;
+pub use calculation_step::CalculationStep;
+mod calculation_result;
+pub use calculation_result::CalculationResult;
 mod utils;
 
 use fehler::throws;
@@ -23,15 +27,14 @@ pub fn calculate_double_integral<Q: quadrature::QuadratureDoubleIntegral>(
         quadrature.clone(),
     )?;
 
-    let not_finilized_result =
-        integrators::Integrator::integrate::<integrators::SecondIntegrator<Q, Q>, Q>(
-            first_integral_begin,
-            first_integral_end,
-            quadrature.get_step_size().0,
-            second_integrator,
-        )?;
+    let result = integrators::Integrator::integrate::<integrators::SecondIntegrator<Q, Q>, Q>(
+        first_integral_begin,
+        first_integral_end,
+        quadrature.get_step_size().0,
+        second_integrator,
+        quadrature,
+    )?;
 
-    let result = quadrature.finalize(not_finilized_result)?;
     result
 }
 
@@ -60,7 +63,7 @@ pub fn calculate_triple_integral<Q: quadrature::QuadratureTripleIntegral>(
             third_integrator,
         )?;
 
-    let not_finilized_result = integrators::Integrator::integrate::<
+    let result = integrators::Integrator::integrate::<
         integrators::SecondIntegrator<Q, integrators::ThirdIntegrator<Q, Q>>,
         Q,
     >(
@@ -68,8 +71,8 @@ pub fn calculate_triple_integral<Q: quadrature::QuadratureTripleIntegral>(
         first_integral_end,
         quadrature.get_step_size().0,
         second_integrator,
+        quadrature,
     )?;
 
-    let result = quadrature.finalize(not_finilized_result)?;
     result
 }
