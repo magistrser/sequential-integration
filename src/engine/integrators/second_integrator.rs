@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 use fehler::throws;
 use mexprp::{Context, Expression};
+use snafu::ensure;
 
 use crate::{
     engine::{
@@ -8,7 +9,7 @@ use crate::{
         quadrature::GetQuadratureRange,
         utils, CalculationResult, CalculationStep,
     },
-    errors::Error,
+    errors::{self, Error},
 };
 
 pub struct SecondIntegrator<G: GetQuadratureRange, E: EquationOfTwoVariable> {
@@ -45,6 +46,8 @@ impl<G: GetQuadratureRange, E: EquationOfTwoVariable> EquationOfOneVariable
 
         let a = utils::calculate_expression_one_value_result(&context, &self.a_equation)?;
         let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
+
+        ensure!(a <= b, errors::BeginBoundGreaterThanEndBound { a, b });
 
         let mut result = CalculationResult::new();
         let mut range = if let Some(range) = G::get_range_generator(a, b, self.h)? {

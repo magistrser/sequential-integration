@@ -1,4 +1,5 @@
 use fehler::throws;
+use snafu::ensure;
 
 use crate::{
     engine::{
@@ -6,7 +7,7 @@ use crate::{
         quadrature::{FinalizeCalculation, GetQuadratureRange},
         CalculationResult,
     },
-    errors::Error,
+    errors::{self, Error},
 };
 
 pub struct FirstIntegrator;
@@ -20,6 +21,8 @@ impl FirstIntegrator {
         equation: E,
         quadrature: G,
     ) -> f64 {
+        ensure!(a <= b, errors::BeginBoundGreaterThanEndBound { a, b });
+
         let mut result = CalculationResult::new();
         let mut range = if let Some(range) = G::get_range_generator(a, b, h)? {
             range

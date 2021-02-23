@@ -24,6 +24,13 @@ pub enum Error {
         b: f64,
         backtrace: Backtrace,
     },
+
+    #[snafu(display("Begin bound{} greater than end bound{}", a, b))]
+    BeginBoundGreaterThanEndBound {
+        a: f64,
+        b: f64,
+        backtrace: Backtrace,
+    },
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
