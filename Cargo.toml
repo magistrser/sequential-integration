@@ -1,7 +1,7 @@
 [package]
 name = "sequential-integration"
 description = "Lightweight library for sequential integration"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Sergey Frantsishkov <mgistrser@gmail.com>"]
 edition = "2018"
 repository = "https://github.com/magistrser/sequential-integration"
