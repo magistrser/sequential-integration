@@ -1,7 +1,9 @@
 pub mod simpson;
 
 use super::{
-    helper_equation_traits::{EquationOfThreeVariable, EquationOfTwoVariable},
+    helper_equation_traits::{
+        EquationOfOneVariable, EquationOfThreeVariable, EquationOfTwoVariable,
+    },
     range_generator::RangeGenerator,
     CalculationResult,
 };
@@ -13,6 +15,20 @@ pub trait GetQuadratureRange {
 
 pub trait FinalizeCalculation {
     fn finalize(&self, result: CalculationResult) -> Result<f64>;
+}
+
+pub trait GetStepSizeSingleIntegral {
+    fn get_step_size(&self) -> f64;
+}
+
+pub trait QuadratureSingleIntegral
+where
+    Self: GetQuadratureRange
+        + FinalizeCalculation
+        + GetStepSizeSingleIntegral
+        + EquationOfOneVariable
+        + Clone,
+{
 }
 
 pub trait GetStepSizeDoubleIntegral {

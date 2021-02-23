@@ -6,9 +6,18 @@ Lightweight library for sequential integration.
 ___
 ### Now support
 
-Double and triple integrals with Simpson quadrature.
+Single, double and triple integrals with Simpson quadrature.
 ___
 ### Examples
+```rust
+sequential_integration::calculate_single_integral_simpson(
+        "max(sqrt(1 - x^2))",    // equation
+        -1,     // first_integral_begin
+        1,      // first_integral_end
+        0.01,   // first_integral_step
+    )?
+```
+
 ```rust
 sequential_integration::calculate_double_integral_simpson(
         "1",    // equation
@@ -36,7 +45,7 @@ sequential_integration::calculate_triple_integral_simpson(
     )?
 ```
 
-**equation** - _f(x,y)_ for double integral and _f(x,y,z)_ for triple integral
+**equation** - _f(x)_ for single integral, _f(x,y)_ for double integral and _f(x,y,z)_ for triple integral
 
 **first_integral_[begin/end]** - _constant_
 

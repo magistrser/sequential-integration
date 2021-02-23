@@ -1,3 +1,5 @@
+mod simpson_quadrature_single_integral;
+pub use simpson_quadrature_single_integral::SimpsonQuadratureSingleIntegral;
 mod simpson_quadrature_double_integral;
 pub use simpson_quadrature_double_integral::SimpsonQuadratureDoubleIntegral;
 mod simpson_quadrature_triple_integral;

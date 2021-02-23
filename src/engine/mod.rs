@@ -13,6 +13,23 @@ use fehler::throws;
 use crate::errors::Error;
 
 #[throws]
+pub fn calculate_single_integral<Q: quadrature::QuadratureSingleIntegral>(
+    quadrature: Q,
+    first_integral_begin: f64,
+    first_integral_end: f64,
+) -> f64 {
+    let result = integrators::Integrator::integrate::<Q, Q>(
+        first_integral_begin,
+        first_integral_end,
+        quadrature.get_step_size(),
+        quadrature.clone(),
+        quadrature,
+    )?;
+
+    result
+}
+
+#[throws]
 pub fn calculate_double_integral<Q: quadrature::QuadratureDoubleIntegral>(
     quadrature: Q,
     first_integral_begin: f64,

@@ -3,6 +3,21 @@ use fehler::throws;
 use crate::{engine, errors::Error};
 
 #[throws]
+pub fn calculate_single_integral_simpson(
+    equation: &str,
+    first_integral_begin: f64,
+    first_integral_end: f64,
+    first_integral_step: f64,
+) -> f64 {
+    let simpson_quadrature = engine::quadrature::simpson::SimpsonQuadratureSingleIntegral::new(
+        equation,
+        first_integral_step,
+    )?;
+
+    engine::calculate_single_integral(simpson_quadrature, first_integral_begin, first_integral_end)?
+}
+
+#[throws]
 pub fn calculate_double_integral_simpson(
     equation: &str,
     first_integral_begin: f64,
