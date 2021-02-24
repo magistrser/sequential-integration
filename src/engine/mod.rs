@@ -7,8 +7,8 @@ pub use calculation_step::CalculationStep;
 mod calculation_result;
 pub use calculation_result::CalculationResult;
 mod bounds;
-mod utils;
 pub use bounds::Bounds;
+pub mod function_types;
 
 use fehler::throws;
 
@@ -24,73 +24,88 @@ pub fn calculate_single_integral<Q: quadrature::QuadratureSingleIntegral>(
         first_integral_begin,
         first_integral_end,
         quadrature.get_step_size(),
-        quadrature.clone(),
-        quadrature,
+        &quadrature,
+        &quadrature,
     )?;
 
     result
 }
 
 #[throws]
-pub fn calculate_double_integral<Q: quadrature::QuadratureDoubleIntegral>(
+pub fn calculate_double_integral<
+    Q: quadrature::QuadratureDoubleIntegral,
+    F1: Fn(f64) -> f64,
+    F2: Fn(f64) -> f64,
+>(
     quadrature: Q,
     first_integral_begin: f64,
     first_integral_end: f64,
-    second_integral_begin: &str,
-    second_integral_end: &str,
+    second_integral_begin: F1,
+    second_integral_end: F2,
 ) -> f64 {
-    let second_integrator = integrators::SecondIntegrator::<Q, Q>::new(
+    let second_integrator = integrators::SecondIntegrator::<Q, Q, F1, F2>::new(
         second_integral_begin,
         second_integral_end,
         quadrature.get_step_size().1,
-        quadrature.clone(),
+        &quadrature,
     )?;
 
-    let result = integrators::Integrator::integrate::<integrators::SecondIntegrator<Q, Q>, Q>(
-        first_integral_begin,
-        first_integral_end,
-        quadrature.get_step_size().0,
-        second_integrator,
-        quadrature,
-    )?;
+    let result =
+        integrators::Integrator::integrate::<integrators::SecondIntegrator<Q, Q, F1, F2>, Q>(
+            first_integral_begin,
+            first_integral_end,
+            quadrature.get_step_size().0,
+            &second_integrator,
+            &quadrature,
+        )?;
 
     result
 }
 
 #[throws]
-pub fn calculate_triple_integral<Q: quadrature::QuadratureTripleIntegral>(
+pub fn calculate_triple_integral<
+    Q: quadrature::QuadratureTripleIntegral,
+    F1: Fn(f64) -> f64,
+    F2: Fn(f64) -> f64,
+    F3: Fn(f64, f64) -> f64,
+    F4: Fn(f64, f64) -> f64,
+>(
     quadrature: Q,
     first_integral_begin: f64,
     first_integral_end: f64,
-    second_integral_begin: &str,
-    second_integral_end: &str,
-    third_integral_begin: &str,
-    third_integral_end: &str,
+    second_integral_begin: F1,
+    second_integral_end: F2,
+    third_integral_begin: F3,
+    third_integral_end: F4,
 ) -> f64 {
-    let third_integrator = integrators::ThirdIntegrator::<Q, Q>::new(
+    let third_integrator = integrators::ThirdIntegrator::<Q, Q, F3, F4>::new(
         third_integral_begin,
         third_integral_end,
         quadrature.get_step_size().2,
-        quadrature.clone(),
+        &quadrature,
     )?;
 
-    let second_integrator =
-        integrators::SecondIntegrator::<Q, integrators::ThirdIntegrator<Q, Q>>::new(
-            second_integral_begin,
-            second_integral_end,
-            quadrature.get_step_size().1,
-            third_integrator,
-        )?;
+    let second_integrator = integrators::SecondIntegrator::<
+        Q,
+        integrators::ThirdIntegrator<Q, Q, F3, F4>,
+        F1,
+        F2,
+    >::new(
+        second_integral_begin,
+        second_integral_end,
+        quadrature.get_step_size().1,
+        &third_integrator,
+    )?;
 
     let result = integrators::Integrator::integrate::<
-        integrators::SecondIntegrator<Q, integrators::ThirdIntegrator<Q, Q>>,
+        integrators::SecondIntegrator<Q, integrators::ThirdIntegrator<Q, Q, F3, F4>, F1, F2>,
         Q,
     >(
         first_integral_begin,
         first_integral_end,
         quadrature.get_step_size().0,
-        second_integrator,
-        quadrature,
+        &second_integrator,
+        &quadrature,
     )?;
 
     result

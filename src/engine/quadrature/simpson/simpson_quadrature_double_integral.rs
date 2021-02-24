@@ -1,5 +1,4 @@
 use fehler::throws;
-use mexprp::{Context, Expression};
 
 use super::{simpson_range::SimpsonRangeGenerator, utils as simpson_utils};
 use crate::{
@@ -10,45 +9,31 @@ use crate::{
             QuadratureDoubleIntegral,
         },
         range_generator::RangeGenerator,
-        utils, Bounds, CalculationResult, CalculationStep,
+        Bounds, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
 
-pub struct SimpsonQuadratureDoubleIntegral {
-    equation: Expression<f64>,
+pub struct SimpsonQuadratureDoubleIntegral<E: Fn(f64, f64) -> f64> {
+    equation: E,
     h: f64,
     k: f64,
 }
 
-impl Clone for SimpsonQuadratureDoubleIntegral {
-    fn clone(&self) -> Self {
-        Self::new(self.equation.string.as_str(), self.h, self.k).unwrap()
-    }
-}
-
-impl SimpsonQuadratureDoubleIntegral {
+impl<E: Fn(f64, f64) -> f64> SimpsonQuadratureDoubleIntegral<E> {
     #[throws]
-    pub fn new(equation: &str, h: f64, k: f64) -> Self {
-        let equation = Expression::parse(equation)?;
+    pub fn new(equation: E, h: f64, k: f64) -> Self {
         Self { equation, h, k }
     }
 
     #[throws]
     fn calculate_simpson(&self, x_values: [f64; 3], y_values: [f64; 3]) -> f64 {
-        let mut context = Context::new();
         let mut f = vec![];
 
         for x in x_values.iter() {
             let mut f_y = vec![];
             for y in y_values.iter() {
-                context.set_var("x", *x);
-                context.set_var("y", *y);
-
-                f_y.push(utils::calculate_expression_one_value_result(
-                    &context,
-                    &self.equation,
-                )?);
+                f_y.push((self.equation)(*x, *y));
             }
             f.push(f_y);
         }
@@ -67,7 +52,7 @@ impl SimpsonQuadratureDoubleIntegral {
     }
 }
 
-impl EquationOfTwoVariable for SimpsonQuadratureDoubleIntegral {
+impl<E: Fn(f64, f64) -> f64> EquationOfTwoVariable for SimpsonQuadratureDoubleIntegral<E> {
     #[throws]
     fn calculate(
         &self,
@@ -99,20 +84,20 @@ impl EquationOfTwoVariable for SimpsonQuadratureDoubleIntegral {
     }
 }
 
-impl FinalizeCalculation for SimpsonQuadratureDoubleIntegral {
+impl<E: Fn(f64, f64) -> f64> FinalizeCalculation for SimpsonQuadratureDoubleIntegral<E> {
     #[throws]
     fn finalize(&self, result: CalculationResult) -> f64 {
         Self::multiple_with_simpson_constant(result.common, self.h, self.k) + result.last
     }
 }
 
-impl GetStepSizeDoubleIntegral for SimpsonQuadratureDoubleIntegral {
+impl<E: Fn(f64, f64) -> f64> GetStepSizeDoubleIntegral for SimpsonQuadratureDoubleIntegral<E> {
     fn get_step_size(&self) -> (f64, f64) {
         (self.h, self.k)
     }
 }
 
-impl GetQuadratureRange for SimpsonQuadratureDoubleIntegral {
+impl<E: Fn(f64, f64) -> f64> GetQuadratureRange for SimpsonQuadratureDoubleIntegral<E> {
     #[throws]
     fn get_range_generator(bounds: Bounds, h: f64) -> Option<Box<dyn RangeGenerator>> {
         if let Some(range_generator) = SimpsonRangeGenerator::new(bounds, h)? {
@@ -123,4 +108,4 @@ impl GetQuadratureRange for SimpsonQuadratureDoubleIntegral {
     }
 }
 
-impl QuadratureDoubleIntegral for SimpsonQuadratureDoubleIntegral {}
+impl<E: Fn(f64, f64) -> f64> QuadratureDoubleIntegral for SimpsonQuadratureDoubleIntegral<E> {}

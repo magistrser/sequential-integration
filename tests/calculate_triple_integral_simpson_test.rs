@@ -3,17 +3,17 @@ use sequential_integration::calculate_triple_integral_simpson;
 
 #[test]
 fn calculate_triple_integral_simpson_sphere() {
-    let equation = "1";
+    let equation = |_x, _y, _z| 1.;
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.01;
 
-    let second_integral_begin = "0";
-    let second_integral_end = "max(sqrt(1 - x^2))";
+    let second_integral_begin = |_x| 0.;
+    let second_integral_end = |x: f64| (1. - x.powf(2.)).sqrt();
     let second_integral_step = 0.01;
 
-    let third_integral_begin = "0";
-    let third_integral_end = "max(sqrt(1 - x^2 - y^2))";
+    let third_integral_begin = |_x, _y| 0.;
+    let third_integral_end = |x: f64, y: f64| (1. - x.powf(2.) - y.powf(2.)).sqrt();
     let third_integral_step = 0.01;
 
     let result = calculate_triple_integral_simpson(
@@ -42,17 +42,17 @@ fn calculate_triple_integral_simpson_sphere() {
 
 #[test]
 fn calculate_triple_integral_simpson_cube() {
-    let equation = "1";
+    let equation = |_x, _y, _z| 1.;
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.05;
 
-    let second_integral_begin = "0";
-    let second_integral_end = "2";
+    let second_integral_begin = |_x| 0.;
+    let second_integral_end = |_x| 2.;
     let second_integral_step = 0.05;
 
-    let third_integral_begin = "0";
-    let third_integral_end = "2";
+    let third_integral_begin = |_x, _y| 0.;
+    let third_integral_end = |_x, _y| 2.;
     let third_integral_step = 0.05;
 
     let result = calculate_triple_integral_simpson(
@@ -81,17 +81,17 @@ fn calculate_triple_integral_simpson_cube() {
 
 #[test]
 fn calculate_triple_integral_simpson_not_const_equation_positive() {
-    let equation = "x ^ 2 + y ^ 2 + z ^ 2";
+    let equation = |x: f64, y: f64, z: f64| x.powf(2.) + y.powf(2.) + z.powf(2.);
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.005;
 
-    let second_integral_begin = "0";
-    let second_integral_end = "x / 2";
+    let second_integral_begin = |_x| 0.;
+    let second_integral_end = |x| x / 2.;
     let second_integral_step = 0.005;
 
-    let third_integral_begin = "0";
-    let third_integral_end = "x^2 + y";
+    let third_integral_begin = |_x, _y| 0.;
+    let third_integral_end = |x: f64, y: f64| x.powf(2.) + y;
     let third_integral_step = 0.005;
 
     let result = calculate_triple_integral_simpson(
@@ -121,17 +121,17 @@ fn calculate_triple_integral_simpson_not_const_equation_positive() {
 
 #[test]
 fn calculate_triple_integral_simpson_not_const_equation_negative() {
-    let equation = "x ^ 2 + y ^ 2 + z ^ 2";
+    let equation = |x: f64, y: f64, z: f64| x.powf(2.) + y.powf(2.) + z.powf(2.);
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.005;
 
-    let second_integral_begin = "x / 2";
-    let second_integral_end = "0";
+    let second_integral_begin = |x| x / 2.;
+    let second_integral_end = |_x| 0.;
     let second_integral_step = 0.005;
 
-    let third_integral_begin = "0";
-    let third_integral_end = "x^2 + y";
+    let third_integral_begin = |_x, _y| 0.;
+    let third_integral_end = |x: f64, y: f64| x.powf(2.) + y;
     let third_integral_step = 0.005;
 
     let result = calculate_triple_integral_simpson(
@@ -161,17 +161,17 @@ fn calculate_triple_integral_simpson_not_const_equation_negative() {
 
 #[test]
 fn calculate_triple_integral_simpson_not_const_from_larger_to_smile() {
-    let equation = "x ^ 2 + y ^ 2 + z ^ 2";
+    let equation = |x: f64, y: f64, z: f64| x.powf(2.) + y.powf(2.) + z.powf(2.);
     let first_integral_begin = 1.;
     let first_integral_end = -1.;
     let first_integral_step = 0.01;
 
-    let second_integral_begin = "x";
-    let second_integral_end = "x / 2";
+    let second_integral_begin = |x| x;
+    let second_integral_end = |x| x / 2.;
     let second_integral_step = 0.01;
 
-    let third_integral_begin = "x^2 + y";
-    let third_integral_end = "0";
+    let third_integral_begin = |x: f64, y: f64| x.powf(2.) + y;
+    let third_integral_end = |_x, _y| 0.;
     let third_integral_step = 0.01;
 
     let result = calculate_triple_integral_simpson(

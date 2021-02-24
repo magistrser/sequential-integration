@@ -18,8 +18,8 @@ impl FirstIntegrator {
         a: f64,
         b: f64,
         h: f64,
-        equation: E,
-        quadrature: G,
+        equation: &E,
+        quadrature: &G,
     ) -> f64 {
         let borders_config = utils::BoundsConfigurator::configurate(a, b)?;
 

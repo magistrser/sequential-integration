@@ -3,13 +3,13 @@ use sequential_integration::calculate_double_integral_simpson;
 
 #[test]
 fn calculate_double_integral_simpson_circel() {
-    let equation = "1";
+    let equation = |_x, _y| 1.;
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.005;
 
-    let second_integral_begin = "0";
-    let second_integral_end = "max(sqrt(1 - x^2))";
+    let second_integral_begin = |_x| -0.;
+    let second_integral_end = |x: f64| (1. - x.powf(2.)).sqrt();
     let second_integral_step = 0.005;
 
     let result = calculate_double_integral_simpson(
@@ -35,13 +35,13 @@ fn calculate_double_integral_simpson_circel() {
 
 #[test]
 fn calculate_double_integral_simpson_not_const_equation() {
-    let equation = "x ^ 2/ y ^ 2";
+    let equation = |x: f64, y: f64| x.powf(2.) / y.powf(2.);
     let first_integral_begin = 1.;
     let first_integral_end = 2.;
     let first_integral_step = 0.001;
 
-    let second_integral_begin = "1/x";
-    let second_integral_end = "x";
+    let second_integral_begin = |x: f64| 1. / x;
+    let second_integral_end = |x: f64| x;
     let second_integral_step = 0.001;
 
     let result = calculate_double_integral_simpson(

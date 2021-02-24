@@ -26,8 +26,7 @@ where
     Self: GetQuadratureRange
         + FinalizeCalculation
         + GetStepSizeSingleIntegral
-        + EquationOfOneVariable
-        + Clone,
+        + EquationOfOneVariable,
 {
 }
 
@@ -40,8 +39,7 @@ where
     Self: GetQuadratureRange
         + FinalizeCalculation
         + GetStepSizeDoubleIntegral
-        + EquationOfTwoVariable
-        + Clone,
+        + EquationOfTwoVariable,
 {
 }
 
@@ -54,7 +52,6 @@ where
     Self: GetQuadratureRange
         + FinalizeCalculation
         + GetStepSizeTripleIntegral
-        + EquationOfThreeVariable
-        + Clone,
+        + EquationOfThreeVariable,
 {
 }

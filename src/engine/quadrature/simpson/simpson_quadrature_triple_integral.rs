@@ -1,5 +1,4 @@
 use fehler::throws;
-use mexprp::{Context, Expression};
 
 use super::{simpson_range::SimpsonRangeGenerator, utils as simpson_utils};
 use crate::{
@@ -10,34 +9,26 @@ use crate::{
             QuadratureTripleIntegral,
         },
         range_generator::RangeGenerator,
-        utils, Bounds, CalculationResult, CalculationStep,
+        Bounds, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
 
-pub struct SimpsonQuadratureTripleIntegral {
-    equation: Expression<f64>,
+pub struct SimpsonQuadratureTripleIntegral<E: Fn(f64, f64, f64) -> f64> {
+    equation: E,
     h: f64,
     k: f64,
     l: f64,
 }
 
-impl Clone for SimpsonQuadratureTripleIntegral {
-    fn clone(&self) -> Self {
-        Self::new(self.equation.string.as_str(), self.h, self.k, self.l).unwrap()
-    }
-}
-
-impl SimpsonQuadratureTripleIntegral {
+impl<E: Fn(f64, f64, f64) -> f64> SimpsonQuadratureTripleIntegral<E> {
     #[throws]
-    pub fn new(equation: &str, h: f64, k: f64, l: f64) -> Self {
-        let equation = Expression::parse(equation)?;
+    pub fn new(equation: E, h: f64, k: f64, l: f64) -> Self {
         Self { equation, h, k, l }
     }
 
     #[throws]
     fn calculate_simpson(&self, x_values: [f64; 3], y_values: [f64; 3], z_values: [f64; 3]) -> f64 {
-        let mut context = Context::new();
         let mut f = vec![];
 
         for x in x_values.iter() {
@@ -45,14 +36,7 @@ impl SimpsonQuadratureTripleIntegral {
             for y in y_values.iter() {
                 let mut f_z = vec![];
                 for z in z_values.iter() {
-                    context.set_var("x", *x);
-                    context.set_var("y", *y);
-                    context.set_var("z", *z);
-
-                    f_z.push(utils::calculate_expression_one_value_result(
-                        &context,
-                        &self.equation,
-                    )?);
+                    f_z.push((self.equation)(*x, *y, *z));
                 }
                 f_y.push(f_z);
             }
@@ -88,7 +72,7 @@ impl SimpsonQuadratureTripleIntegral {
     }
 }
 
-impl EquationOfThreeVariable for SimpsonQuadratureTripleIntegral {
+impl<E: Fn(f64, f64, f64) -> f64> EquationOfThreeVariable for SimpsonQuadratureTripleIntegral<E> {
     #[throws]
     fn calculate(
         &self,
@@ -125,20 +109,20 @@ impl EquationOfThreeVariable for SimpsonQuadratureTripleIntegral {
     }
 }
 
-impl FinalizeCalculation for SimpsonQuadratureTripleIntegral {
+impl<E: Fn(f64, f64, f64) -> f64> FinalizeCalculation for SimpsonQuadratureTripleIntegral<E> {
     #[throws]
     fn finalize(&self, result: CalculationResult) -> f64 {
         Self::multiple_with_simpson_constant(result.common, self.h, self.k, self.l) + result.last
     }
 }
 
-impl GetStepSizeTripleIntegral for SimpsonQuadratureTripleIntegral {
+impl<E: Fn(f64, f64, f64) -> f64> GetStepSizeTripleIntegral for SimpsonQuadratureTripleIntegral<E> {
     fn get_step_size(&self) -> (f64, f64, f64) {
         (self.h, self.k, self.l)
     }
 }
 
-impl GetQuadratureRange for SimpsonQuadratureTripleIntegral {
+impl<E: Fn(f64, f64, f64) -> f64> GetQuadratureRange for SimpsonQuadratureTripleIntegral<E> {
     #[throws]
     fn get_range_generator(bounds: Bounds, h: f64) -> Option<Box<dyn RangeGenerator>> {
         if let Some(range_generator) = SimpsonRangeGenerator::new(bounds, h)? {
@@ -149,4 +133,4 @@ impl GetQuadratureRange for SimpsonQuadratureTripleIntegral {
     }
 }
 
-impl QuadratureTripleIntegral for SimpsonQuadratureTripleIntegral {}
+impl<E: Fn(f64, f64, f64) -> f64> QuadratureTripleIntegral for SimpsonQuadratureTripleIntegral<E> {}

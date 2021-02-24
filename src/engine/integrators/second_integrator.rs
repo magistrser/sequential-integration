@@ -1,31 +1,40 @@
 use core::marker::PhantomData;
 use fehler::throws;
-use mexprp::{Context, Expression};
 
 use super::utils as integrator_utils;
 use crate::{
     engine::{
         helper_equation_traits::{EquationOfOneVariable, EquationOfTwoVariable},
         quadrature::GetQuadratureRange,
-        utils, Bounds, CalculationResult, CalculationStep,
+        Bounds, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
 
-pub struct SecondIntegrator<G: GetQuadratureRange, E: EquationOfTwoVariable> {
-    a_equation: Expression<f64>,
-    b_equation: Expression<f64>,
+pub struct SecondIntegrator<
+    'a,
+    G: GetQuadratureRange,
+    E: EquationOfTwoVariable,
+    F1: Fn(f64) -> f64,
+    F2: Fn(f64) -> f64,
+> {
+    a_equation: F1,
+    b_equation: F2,
     h: f64,
-    equation: E,
+    equation: &'a E,
     _p: PhantomData<G>,
 }
 
-impl<G: GetQuadratureRange, E: EquationOfTwoVariable> SecondIntegrator<G, E> {
+impl<
+        'a,
+        G: GetQuadratureRange,
+        E: EquationOfTwoVariable,
+        F1: Fn(f64) -> f64,
+        F2: Fn(f64) -> f64,
+    > SecondIntegrator<'a, G, E, F1, F2>
+{
     #[throws]
-    pub fn new(a_equation: &str, b_equation: &str, h: f64, equation: E) -> Self {
-        let a_equation = Expression::parse(a_equation)?;
-        let b_equation = Expression::parse(b_equation)?;
-
+    pub fn new(a_equation: F1, b_equation: F2, h: f64, equation: &'a E) -> Self {
         Self {
             a_equation,
             b_equation,
@@ -36,16 +45,18 @@ impl<G: GetQuadratureRange, E: EquationOfTwoVariable> SecondIntegrator<G, E> {
     }
 }
 
-impl<G: GetQuadratureRange, E: EquationOfTwoVariable> EquationOfOneVariable
-    for SecondIntegrator<G, E>
+impl<
+        'a,
+        G: GetQuadratureRange,
+        E: EquationOfTwoVariable,
+        F1: Fn(f64) -> f64,
+        F2: Fn(f64) -> f64,
+    > EquationOfOneVariable for SecondIntegrator<'a, G, E, F1, F2>
 {
     #[throws]
     fn calculate(&self, x: CalculationStep, bounds: Bounds) -> CalculationResult {
-        let mut context = Context::new();
-        context.set_var("x", *x);
-
-        let a = utils::calculate_expression_one_value_result(&context, &self.a_equation)?;
-        let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
+        let a = (self.a_equation)(*x);
+        let b = (self.b_equation)(*x);
         let borders_config = integrator_utils::BoundsConfigurator::configurate(a, b)?;
 
         let mut result = CalculationResult::new();

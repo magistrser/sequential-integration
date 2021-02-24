@@ -3,7 +3,8 @@ use sequential_integration::calculate_single_integral_simpson;
 
 #[test]
 fn calculate_single_integral_simpson_not_const_equation() {
-    let equation = "max(sqrt(1 - x^2))";
+    let equation = |x: f64| (1. - x.powf(2.)).sqrt();
+
     let first_integral_begin = -1.;
     let first_integral_end = 1.;
     let first_integral_step = 0.05;

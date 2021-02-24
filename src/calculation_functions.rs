@@ -3,8 +3,8 @@ use fehler::throws;
 use crate::{engine, errors::Error};
 
 #[throws]
-pub fn calculate_single_integral_simpson(
-    equation: &str,
+pub fn calculate_single_integral_simpson<E: Fn(f64) -> f64>(
+    equation: E,
     first_integral_begin: f64,
     first_integral_end: f64,
     first_integral_step: f64,
@@ -18,13 +18,17 @@ pub fn calculate_single_integral_simpson(
 }
 
 #[throws]
-pub fn calculate_double_integral_simpson(
-    equation: &str,
+pub fn calculate_double_integral_simpson<
+    E: Fn(f64, f64) -> f64,
+    F1: Fn(f64) -> f64,
+    F2: Fn(f64) -> f64,
+>(
+    equation: E,
     first_integral_begin: f64,
     first_integral_end: f64,
     first_integral_step: f64,
-    second_integral_begin: &str,
-    second_integral_end: &str,
+    second_integral_begin: F1,
+    second_integral_end: F2,
     second_integral_step: f64,
 ) -> f64 {
     let simpson_quadrature = engine::quadrature::simpson::SimpsonQuadratureDoubleIntegral::new(
@@ -43,16 +47,22 @@ pub fn calculate_double_integral_simpson(
 }
 
 #[throws]
-pub fn calculate_triple_integral_simpson(
-    equation: &str,
+pub fn calculate_triple_integral_simpson<
+    E: Fn(f64, f64, f64) -> f64,
+    F1: Fn(f64) -> f64,
+    F2: Fn(f64) -> f64,
+    F3: Fn(f64, f64) -> f64,
+    F4: Fn(f64, f64) -> f64,
+>(
+    equation: E,
     first_integral_begin: f64,
     first_integral_end: f64,
     first_integral_step: f64,
-    second_integral_begin: &str,
-    second_integral_end: &str,
+    second_integral_begin: F1,
+    second_integral_end: F2,
     second_integral_step: f64,
-    third_integral_begin: &str,
-    third_integral_end: &str,
+    third_integral_begin: F3,
+    third_integral_end: F4,
     third_integral_step: f64,
 ) -> f64 {
     let simpson_quadrature = engine::quadrature::simpson::SimpsonQuadratureTripleIntegral::new(

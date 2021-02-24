@@ -1,5 +1,4 @@
 use fehler::throws;
-use mexprp::{Context, Expression};
 
 use super::{simpson_range::SimpsonRangeGenerator, utils as simpson_utils};
 use crate::{
@@ -10,40 +9,28 @@ use crate::{
             QuadratureSingleIntegral,
         },
         range_generator::RangeGenerator,
-        utils, Bounds, CalculationResult, CalculationStep,
+        Bounds, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
 
-pub struct SimpsonQuadratureSingleIntegral {
-    equation: Expression<f64>,
+pub struct SimpsonQuadratureSingleIntegral<E: Fn(f64) -> f64> {
+    equation: E,
     h: f64,
 }
 
-impl Clone for SimpsonQuadratureSingleIntegral {
-    fn clone(&self) -> Self {
-        Self::new(self.equation.string.as_str(), self.h).unwrap()
-    }
-}
-
-impl SimpsonQuadratureSingleIntegral {
+impl<E: Fn(f64) -> f64> SimpsonQuadratureSingleIntegral<E> {
     #[throws]
-    pub fn new(equation: &str, h: f64) -> Self {
-        let equation = Expression::parse(equation)?;
+    pub fn new(equation: E, h: f64) -> Self {
         Self { equation, h }
     }
 
     #[throws]
     fn calculate_simpson(&self, x_values: [f64; 3]) -> f64 {
-        let mut context = Context::new();
         let mut f = vec![];
 
         for x in x_values.iter() {
-            context.set_var("x", *x);
-            f.push(utils::calculate_expression_one_value_result(
-                &context,
-                &self.equation,
-            )?);
+            f.push((self.equation)(*x));
         }
 
         let result = f[0] + 4. * f[1] + f[2];
@@ -55,7 +42,7 @@ impl SimpsonQuadratureSingleIntegral {
     }
 }
 
-impl EquationOfOneVariable for SimpsonQuadratureSingleIntegral {
+impl<E: Fn(f64) -> f64> EquationOfOneVariable for SimpsonQuadratureSingleIntegral<E> {
     #[throws]
     fn calculate(&self, x: CalculationStep, bounds: Bounds) -> CalculationResult {
         let mut is_last_step = false;
@@ -76,20 +63,20 @@ impl EquationOfOneVariable for SimpsonQuadratureSingleIntegral {
     }
 }
 
-impl FinalizeCalculation for SimpsonQuadratureSingleIntegral {
+impl<E: Fn(f64) -> f64> FinalizeCalculation for SimpsonQuadratureSingleIntegral<E> {
     #[throws]
     fn finalize(&self, result: CalculationResult) -> f64 {
         Self::multiple_with_simpson_constant(result.common, self.h) + result.last
     }
 }
 
-impl GetStepSizeSingleIntegral for SimpsonQuadratureSingleIntegral {
+impl<E: Fn(f64) -> f64> GetStepSizeSingleIntegral for SimpsonQuadratureSingleIntegral<E> {
     fn get_step_size(&self) -> f64 {
         self.h
     }
 }
 
-impl GetQuadratureRange for SimpsonQuadratureSingleIntegral {
+impl<E: Fn(f64) -> f64> GetQuadratureRange for SimpsonQuadratureSingleIntegral<E> {
     #[throws]
     fn get_range_generator(bounds: Bounds, h: f64) -> Option<Box<dyn RangeGenerator>> {
         if let Some(range_generator) = SimpsonRangeGenerator::new(bounds, h)? {
@@ -100,4 +87,4 @@ impl GetQuadratureRange for SimpsonQuadratureSingleIntegral {
     }
 }
 
-impl QuadratureSingleIntegral for SimpsonQuadratureSingleIntegral {}
+impl<E: Fn(f64) -> f64> QuadratureSingleIntegral for SimpsonQuadratureSingleIntegral<E> {}
