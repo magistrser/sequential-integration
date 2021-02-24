@@ -46,19 +46,19 @@ sequential_integration::calculate_triple_integral_simpson(
     )?
 ```
 
-**equation** - _f(x)_ for single integral, _f(x,y)_ for double integral and _f(x,y,z)_ for triple integral<br/>
-**first_integral_[begin/end]** - _constant_<br/>
-**second_integral_[begin/end]** - _f(x)_<br/>
-**third_integral_[begin/end]** - _f(x,y)_<br/>
+**equation** - _f(x)_ for single integral, _f(x,y)_ for double integral and _f(x,y,z)_ for triple integral <br/>
+**first_integral_[begin/end]** - _constant_ <br/>
+**second_integral_[begin/end]** - _f(x)_ <br/>
+**third_integral_[begin/end]** - _f(x,y)_ <br/>
 
 ___
 
 ### Release updates:
-**0.0.1** - Double and triple integrals with Simpson quadrature <br/>
-**0.0.2** - Not use additional memory, correct way for last step<br/>
-**0.0.3** - Support single integral<br/>
-**0.0.4** - Support integration from larger bound to smaller bound<br/>
-**1.0.0** - Use closures instead string equations (See [mexprp](https://docs.rs/mexprp/0.3.0/mexprp/) if you want to use string equations with closures)<br/>
+**0.0.1** - Double and triple integrals with Simpson quadrature  <br/>
+**0.0.2** - Not use additional memory, correct way for last step <br/>
+**0.0.3** - Support single integral <br/>
+**0.0.4** - Support integration from larger bound to smaller bound <br/>
+**1.0.0** - Use closures instead string equations (See [mexprp](https://docs.rs/mexprp/0.3.0/mexprp/) if you want to use string equations with closures) <br/>
 
 ___
 ___
