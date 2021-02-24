@@ -4,13 +4,13 @@ use mexprp::{Context, Expression};
 use super::{simpson_range::SimpsonRangeGenerator, utils as simpson_utils};
 use crate::{
     engine::{
-        helper_equation_traits::{Bounds, EquationOfTwoVariable},
+        helper_equation_traits::EquationOfTwoVariable,
         quadrature::{
             FinalizeCalculation, GetQuadratureRange, GetStepSizeDoubleIntegral,
             QuadratureDoubleIntegral,
         },
         range_generator::RangeGenerator,
-        utils, CalculationResult, CalculationStep,
+        utils, Bounds, CalculationResult, CalculationStep,
     },
     errors::Error,
 };
@@ -114,8 +114,8 @@ impl GetStepSizeDoubleIntegral for SimpsonQuadratureDoubleIntegral {
 
 impl GetQuadratureRange for SimpsonQuadratureDoubleIntegral {
     #[throws]
-    fn get_range_generator(a: f64, b: f64, h: f64) -> Option<Box<dyn RangeGenerator>> {
-        if let Some(range_generator) = SimpsonRangeGenerator::new(a, b, h)? {
+    fn get_range_generator(bounds: Bounds, h: f64) -> Option<Box<dyn RangeGenerator>> {
+        if let Some(range_generator) = SimpsonRangeGenerator::new(bounds, h)? {
             Some(Box::new(range_generator) as Box<dyn RangeGenerator>)
         } else {
             None

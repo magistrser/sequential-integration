@@ -1,4 +1,4 @@
-use crate::engine::{helper_equation_traits::Bounds, CalculationStep};
+use crate::engine::{Bounds, CalculationStep};
 
 pub struct SimpsonPoints {
     pub v0: f64,
@@ -18,7 +18,7 @@ impl SimpsonPoints {
         let (v1, v2, h) = if step.is_last() {
             *is_last_step = true;
 
-            let v2 = bounds.1;
+            let v2 = bounds.end;
             let h = (v2 - v0) / 2.;
             let v1 = v0 + h;
             (v1, v2, h)

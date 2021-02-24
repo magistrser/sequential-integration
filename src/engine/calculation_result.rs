@@ -13,6 +13,16 @@ impl std::ops::AddAssign for CalculationResult {
     }
 }
 
+impl std::ops::Mul<f64> for CalculationResult {
+    type Output = CalculationResult;
+
+    fn mul(mut self, coeff: f64) -> Self::Output {
+        self.common *= coeff;
+        self.last *= coeff;
+        self
+    }
+}
+
 impl CalculationResult {
     pub fn new() -> Self {
         Self {

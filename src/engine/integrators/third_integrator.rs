@@ -1,15 +1,15 @@
 use core::marker::PhantomData;
 use fehler::throws;
 use mexprp::{Context, Expression};
-use snafu::ensure;
 
+use super::utils as integrator_utils;
 use crate::{
     engine::{
-        helper_equation_traits::{Bounds, EquationOfThreeVariable, EquationOfTwoVariable},
+        helper_equation_traits::{EquationOfThreeVariable, EquationOfTwoVariable},
         quadrature::GetQuadratureRange,
-        utils, CalculationResult, CalculationStep,
+        utils, Bounds, CalculationResult, CalculationStep,
     },
-    errors::{self, Error},
+    errors::Error,
 };
 
 pub struct ThirdIntegrator<G: GetQuadratureRange, E: EquationOfThreeVariable> {
@@ -53,11 +53,11 @@ impl<G: GetQuadratureRange, E: EquationOfThreeVariable> EquationOfTwoVariable
 
         let a = utils::calculate_expression_one_value_result(&context, &self.a_equation)?;
         let b = utils::calculate_expression_one_value_result(&context, &self.b_equation)?;
-
-        ensure!(a <= b, errors::BeginBoundGreaterThanEndBound { a, b });
+        let borders_config = integrator_utils::BoundsConfigurator::configurate(a, b)?;
 
         let mut result = CalculationResult::new();
-        let mut range = if let Some(range) = G::get_range_generator(a, b, self.h)? {
+        let mut range = if let Some(range) = G::get_range_generator(borders_config.bounds, self.h)?
+        {
             range
         } else {
             return result;
@@ -65,9 +65,10 @@ impl<G: GetQuadratureRange, E: EquationOfThreeVariable> EquationOfTwoVariable
 
         loop {
             let step = range.next()?;
-            result += self
-                .equation
-                .calculate(x, bounds_x, y, bounds_y, step, (a, b))?;
+            result +=
+                self.equation
+                    .calculate(x, bounds_x, y, bounds_y, step, borders_config.bounds)?
+                    * borders_config.direction_coeff;
 
             if step.is_last() {
                 break;

@@ -1,7 +1,5 @@
-use super::{CalculationResult, CalculationStep};
+use super::{Bounds, CalculationResult, CalculationStep};
 use crate::errors::Result;
-
-pub type Bounds = (f64, f64);
 
 pub trait EquationOfOneVariable {
     fn calculate(&self, value: CalculationStep, bounds: Bounds) -> Result<CalculationResult>;

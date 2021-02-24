@@ -6,7 +6,9 @@ pub mod range_generator;
 pub use calculation_step::CalculationStep;
 mod calculation_result;
 pub use calculation_result::CalculationResult;
+mod bounds;
 mod utils;
+pub use bounds::Bounds;
 
 use fehler::throws;
 

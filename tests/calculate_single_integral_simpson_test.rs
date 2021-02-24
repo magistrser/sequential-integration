@@ -2,7 +2,7 @@ use assert_approx_eq::assert_approx_eq;
 use sequential_integration::calculate_single_integral_simpson;
 
 #[test]
-fn calculate_single_integral_simpson_test() {
+fn calculate_single_integral_simpson_not_const_equation() {
     let equation = "max(sqrt(1 - x^2))";
     let first_integral_begin = -1.;
     let first_integral_end = 1.;

@@ -12,8 +12,8 @@ ___
 ```rust
 sequential_integration::calculate_single_integral_simpson(
         "max(sqrt(1 - x^2))",    // equation
-        -1,     // first_integral_begin
-        1,      // first_integral_end
+        -1.,    // first_integral_begin
+        1.,     // first_integral_end
         0.01,   // first_integral_step
     )?
 ```
@@ -21,9 +21,9 @@ sequential_integration::calculate_single_integral_simpson(
 ```rust
 sequential_integration::calculate_double_integral_simpson(
         "1",    // equation
-        -1,     // first_integral_begin
-        1,      // first_integral_end
-        0.01,   // first_integral_step
+        -1.,        // first_integral_begin
+        1.,         // first_integral_end
+        0.01,       // first_integral_step
         "0",                    // second_integral_begin
         "max(sqrt(1 - x^2))",   // second_integral_end
         0.01,                   // second_integral_step
@@ -33,15 +33,30 @@ sequential_integration::calculate_double_integral_simpson(
 ```rust
 sequential_integration::calculate_triple_integral_simpson(
         "1",    // equation
-        -1,     // first_integral_begin
-        1,      // first_integral_end
-        0.01,   // first_integral_step
+        -1.,        // first_integral_begin
+        1.,         // first_integral_end
+        0.01,       // first_integral_step
         "0",                    // second_integral_begin
         "max(sqrt(1 - x^2))",   // second_integral_end
         0.01,                   // second_integral_step
         "0",                            // third_integral_begin
         "max(sqrt(1 - x^2 - y^2))",     // third_integral_end
         0.01,                           // third_integral_step
+    )?
+```
+
+```rust
+sequential_integration::calculate_triple_integral_simpson(
+        "x ^ 2 + y ^ 2 + z ^ 2",    // equation
+        -1.,    // first_integral_begin
+        1.,     // first_integral_end
+        0.01,   // first_integral_step
+        "x",        // second_integral_begin
+        "x / 2",    // second_integral_end
+        0.01,       // second_integral_step
+        "x^2 + y",      // third_integral_begin
+        "0",            // third_integral_end
+        0.01,           // third_integral_step
     )?
 ```
 

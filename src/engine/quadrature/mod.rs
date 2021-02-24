@@ -5,12 +5,12 @@ use super::{
         EquationOfOneVariable, EquationOfThreeVariable, EquationOfTwoVariable,
     },
     range_generator::RangeGenerator,
-    CalculationResult,
+    Bounds, CalculationResult,
 };
 use crate::errors::Result;
 
 pub trait GetQuadratureRange {
-    fn get_range_generator(a: f64, b: f64, h: f64) -> Result<Option<Box<dyn RangeGenerator>>>;
+    fn get_range_generator(bounds: Bounds, h: f64) -> Result<Option<Box<dyn RangeGenerator>>>;
 }
 
 pub trait FinalizeCalculation {

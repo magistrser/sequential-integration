@@ -1,13 +1,13 @@
 use fehler::throws;
-use snafu::ensure;
 
+use super::utils;
 use crate::{
     engine::{
         helper_equation_traits::EquationOfOneVariable,
         quadrature::{FinalizeCalculation, GetQuadratureRange},
         CalculationResult,
     },
-    errors::{self, Error},
+    errors::Error,
 };
 
 pub struct FirstIntegrator;
@@ -21,10 +21,10 @@ impl FirstIntegrator {
         equation: E,
         quadrature: G,
     ) -> f64 {
-        ensure!(a <= b, errors::BeginBoundGreaterThanEndBound { a, b });
+        let borders_config = utils::BoundsConfigurator::configurate(a, b)?;
 
         let mut result = CalculationResult::new();
-        let mut range = if let Some(range) = G::get_range_generator(a, b, h)? {
+        let mut range = if let Some(range) = G::get_range_generator(borders_config.bounds, h)? {
             range
         } else {
             return result.common;
@@ -32,7 +32,8 @@ impl FirstIntegrator {
 
         loop {
             let step = range.next()?;
-            result += equation.calculate(step, (a, b))?;
+            result +=
+                equation.calculate(step, borders_config.bounds)? * borders_config.direction_coeff;
 
             if step.is_last() {
                 break;

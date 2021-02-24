@@ -18,17 +18,17 @@ pub enum Error {
         backtrace: Backtrace,
     },
 
-    #[snafu(display("RangeGenerator step{} out of b bound{}", step, b))]
+    #[snafu(display("RangeGenerator step{} out of end bound{}", step, end))]
     RangeGeneratorOutOfBounds {
         step: f64,
-        b: f64,
+        end: f64,
         backtrace: Backtrace,
     },
 
-    #[snafu(display("Begin bound{} greater than end bound{}", a, b))]
+    #[snafu(display("Begin bound{} greater than end bound{}", begin, end))]
     BeginBoundGreaterThanEndBound {
-        a: f64,
-        b: f64,
+        begin: f64,
+        end: f64,
         backtrace: Backtrace,
     },
 }
